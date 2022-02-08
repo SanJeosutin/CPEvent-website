@@ -36,5 +36,8 @@ class User{
     public function getUserDiscordTag(){
         return $this->username.'#'.$this->user_discriminator;
     }
+
+    private function _storeUserID(){
+    }
 }
 ?>
