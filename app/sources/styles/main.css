@@ -1,0 +1,28 @@
+@import url('colours.css');
+
+body { 
+    padding-top: 65px;
+}
+
+.picture-gallery img, .picture-gallery{
+    border-radius: 15px;
+    border-width: 2px;
+}
+
+.picture-gallery .picture-info{
+    position: absolute;
+    width: 96%;
+    height: 96%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.picture-gallery .picture-info:hover{
+    cursor: pointer;
+}
+
+.picture-gallery img{
+    opacity: 1;
+    filter: blur(4px);
+}
