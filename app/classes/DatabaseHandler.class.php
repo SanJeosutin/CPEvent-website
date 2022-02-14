@@ -3,13 +3,6 @@ require_once('DotEnv.class.php');
 (new DotEnv(__DIR__ . '/../../.env'))->load();
 
 class DatabaseHandler{
-    private $connection;
-    private $host;
-    private $user;
-    private $password;
-    private $db_name;
-    private $db_dns;
-
     public function __construct(){
         $this->host = getenv('DB_HOST');
         $this->user = getenv('DB_USER');
@@ -24,7 +17,7 @@ class DatabaseHandler{
                 $this->password
             );
         }catch(Exception $e){
-            echo $e->getMessage();
+            return $e->getMessage();
         }
     }
 
@@ -34,11 +27,24 @@ class DatabaseHandler{
 
     public function exec($query){
         if(!$this->_isConnect()) return;
-        $this->connection->exec($query);
+        $statement = $this->connection->prepare($query);
+        return $statement->execute();
+    }
+
+    public function isExist($statement){
+        $result = $this->connection->prepare($statement);
+        $result->execute();
+
+        if($result->rowCount() > 0){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     private function _isConnect(){
         if(!$this->connection) return false;
+        return true;
     }
 }
 ?>

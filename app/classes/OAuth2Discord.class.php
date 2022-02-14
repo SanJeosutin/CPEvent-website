@@ -1,16 +1,11 @@
 <?php
+if (session_status() == PHP_SESSION_NONE) session_start();
+
 require_once('DotEnv.class.php');
 require_once('callAPI.class.php');
 (new DotEnv(__DIR__ . '/../../.env'))->load();
 
 class OAuth2Discord{
-    private $base_url;
-    private $base_header;
-    private $client_id;
-    private $client_scope;
-    private $client_secret;
-    private $redirect_uri;
-
     public function __construct(){
         $this->base_url = getenv('DISCORD_CLIENT_BASE_URL');
         $this->base_header = getenv('DISCORD_CLIENT_BASE_HEADER');
@@ -19,7 +14,10 @@ class OAuth2Discord{
         $this->client_secret = getenv('DISCORD_CLIENT_SECRET');
         $this->redirect_uri = getenv('DISCORD_REDIRECT_URI');
 
+        $this->guild_id = getenv('DISCORD_CLIENT_GUILD_ID');
         $this->state = $this->_generateState();
+        $_SESSION['state'] = $this->state;
+        $_GET['state'] = $this->state;
         
         try{
             if(!isset($_GET['code']) && !isset($_GET['state'])) return;
@@ -37,6 +35,7 @@ class OAuth2Discord{
                 "scope" => 'identify'
             );
 
+
             $this->rawData = API::makeRequest(
                 $this->oauth2_url,
                 'QUERY',
@@ -45,14 +44,25 @@ class OAuth2Discord{
 
             $this->token_type = $this->rawData->token_type;
             $this->access_token = $this->rawData->access_token;
-
-            $this->_setSessionState();
+            $_SESSION['access_token'] = $this->rawData->access_token;
         }catch(Exception $e){
             echo $e->getMessage();
         }
     }
 
-    public function getUserData(){
+    public function getAccessToken(){
+        return $this->access_token;
+    }
+
+    public function generateOAuth2URL(){
+        return 'https://discord.com/api/oauth2/authorize?response_type=code&client_id='
+                .$this->client_id.'&redirect_uri='
+                .$this->redirect_uri.'&scope='
+                .$this->client_scope.'&state='
+                .$this->state;
+    }
+
+    protected function getUserData(){
         $this->header = array(
             $this->base_header, 
             'Authorization: '.$this->token_type.' '.$this->access_token
@@ -64,27 +74,25 @@ class OAuth2Discord{
         );
     }
 
-    public function generateOAuth2URL(){
-        return 'https://discord.com/api/oauth2/authorize?response_type=code&client_id='
-                .$this->client_id.'&redirect_uri='
-                .$this->redirect_uri.'&scope='
-                .$this->client_scope.'&state='
-                .$this->state;
-    }
-    
-    public function validateUser(){
-        if(!isset($_SESSION['state'])) return false;
-        if($_SESSION['state'] !== $this->state) return false;
-
-        return true;
+    protected function getUserGuildData(){
+        $this->header = array(
+            $this->base_header, 
+            'Authorization: '.$this->token_type.' '.$this->access_token
+        );
+        return API::makeRequest(
+            $this->base_url.'/users/@me/guilds',
+            'HEADER',
+            $this->header
+        );
     }
 
-    private function _setSessionState(){
-        $_SESSION['state'] = $this->state;
+    protected function getGuildId(){
+        return $this->guild_id;
     }
 
     private function _generateState(){
         return bin2hex(openssl_random_pseudo_bytes(16));
+
     }
 
 }

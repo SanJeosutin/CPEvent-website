@@ -1,3 +1,7 @@
+<?php
+include('classes/User.class.php');
+$user = new User();
+?>
 <nav class="navbar fixed-top navbar-light bg-light">
         <div class="container-fluid">
             <a class="navbar-brand">
@@ -10,9 +14,8 @@
                     <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button"
                         aria-expanded="false">
                         <img class="rounded-circle"
-                            src="https://cdn.discordapp.com/avatars/133757488100016129/a_ff882595eec290e1a83b84c1332d552c.webp?size=32"
-                            alt="logo" class="logo">
-                        Jury Quackington#6116
+                            src="<?php echo $user->getUserImage(); ?>" style="width: 32px; height: 32px;" alt="logo" class="logo">
+                            <?php echo $user->getUserDiscordTag(); ?>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item">
