@@ -1,3 +1,4 @@
+<?php if(session_status() == PHP_SESSION_NONE) session_start() ?>
 <!doctype html>
 <html lang="en">
 
@@ -13,4 +14,4 @@
     <title>Chill & Play Events</title>
 </head>
 
-<body class="bg-dark text-white">
+<body class="bg-dark text-white padding-content">
