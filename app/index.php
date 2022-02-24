@@ -1,5 +1,5 @@
 <?php if (session_status() == PHP_SESSION_NONE) session_start(); ?>
-
+<?php if(isset($_SESSION['loggedIn']) == true) header('location: dashboard.php'); ?>
 <!doctype html>
 <html lang="en">
 
