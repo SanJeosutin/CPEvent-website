@@ -1,4 +1,26 @@
 <?php if(session_status() == PHP_SESSION_NONE) session_start() ?>
+
+<?php
+
+include('classes/User.class.php');
+
+User::load();
+User::storeUserData();
+
+if(!isset($_SESSION['loggedIn']) && !User::isUserValid()){
+    header('Location: logout.php');
+    exit();
+    
+}else if(User::isUserValid()){
+    $_SESSION['loggedIn'] = true;
+    $_SESSION['user_id'] = User::getUserId();
+    $_SESSION['username'] = User::getUsername();
+    $_SESSION['userDiscordTag'] = User::getUserDiscordTag();
+    $_SESSION['userProfilePicture'] = User::getUserImage();
+}
+
+?>
+
 <!doctype html>
 <html lang="en">
 
