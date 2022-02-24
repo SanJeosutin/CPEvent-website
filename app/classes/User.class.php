@@ -4,69 +4,92 @@ include_once('OAuth2Discord.class.php');
 
 
 class User extends OAuth2Discord{
-    public function __construct(){
-        $oauth2 = new OAuth2Discord();
-        $this->db = new DatabaseHandler();
+    static $db;
+    static $userData;
+    static $getURL;
+    static $user_data;
+    static $user_id;
+    static $username;
+    static $user_guilds;
+    static $user_discriminator;
+    static $user_avatar;
+    static $guildId;
+    static $state;
+    static $db_query_checkUser;
 
-        $this->userData = $oauth2->getUserData();
+    static public function load(){
+        if(!isset($_SESSION['state']) || !isset($_SESSION['user_id'])){
+            $oauth2 = new OAuth2Discord();
+            
+            self::$userData = $oauth2->getUserData();
+            self::$getURL = $oauth2->generateOAuth2URL();
 
-        $this->getURL = $oauth2->generateOAuth2URL();
-        $this->user_id = $oauth2->getUserData()->id;
-        $this->username = $oauth2->getUserData()->username;
-        $this->user_guilds = $oauth2->getUserGuildData()->guilds[0]->name;
-        $this->user_discriminator = $oauth2->getUserData()->discriminator;
-        $this->user_avatar = $oauth2->getUserData()->avatar;
+            self::$user_data = $oauth2->getUserData();
+            self::$user_id = $oauth2->getUserData()->id;
+            self::$username = $oauth2->getUserData()->username;
+            
+            self::$user_guilds = json_encode($oauth2->getUserGuildData()); 
+            self::$user_discriminator = $oauth2->getUserData()->discriminator;
+            self::$user_avatar = $oauth2->getUserData()->avatar;
 
-        $this->guildId = $oauth2->getGuildId();
-        $this->state = $oauth2->state;
-
-        $this->db_query_checkUser = 'SELECT * FROM usersdata WHERE userID = '.$this->user_id.';';
+            self::$guildId = $oauth2->getGuildId();
+            self::$state = $oauth2->state;
+        }
+        self::$db = new DatabaseHandler();
+        self::$db_query_checkUser = 'SELECT * FROM usersdata WHERE userID = '.self::$user_id.';';
     }
 
-    //!WAS HERE
-    public function isUserValid(){
-        echo $this->user_guilds;
+    static public function isUserValid(){
         if(isset($_SESSION['state'])){
-            if($_SESSION['state'] === $this->getState()){
-                if($this->user_guilds === $this->guildId){
-                    return true; 
+            if($_SESSION['state'] === self::getState()){
+                $userGuilds = json_decode(self::$user_guilds);
+                foreach($userGuilds as $arr){
+                    if($arr->id == self::$guildId){
+                        return true;
+                    }
                 }
             }
         }
         return false;
     }
 
-    public function getState(){
-        $sql = 'SELECT * FROM usersdata WHERE userID = '.$this->user_id.';';
-        $result = $this->db->connection->prepare($sql);
+    static public function getState(){
+        $sql = 'SELECT * FROM usersdata WHERE userID = '.self::$user_id.';';
+        $result = self::$db->connection->prepare($sql);
         $result->execute();
         $row = $result->fetch(PDO::FETCH_ASSOC);
         return $row['userSessionState'];
     }
 
-    public function getOAuth2URL(){
-        return $this->getURL;
+    static public function getUserId(){
+        return self::$user_id;
     }
 
-    public function getUserDiscordTag(){
-        return $this->username.'#'.$this->user_discriminator;
+    static public function getOAuth2URL(){
+        return self::$getURL;
     }
 
-    public function getUsername(){
-        return $this->username;
+    static public function getUserDiscordTag(){
+        return self::$username.'#'.self::$user_discriminator;
     }
 
-    public function getUserImage(){
-        return 'https://cdn.discordapp.com/avatars/'.$this->user_id.'/'.$this->user_avatar;
+    static public function getUsername(){
+        return self::$username;
     }
 
-    public function storeUserData(){
-        if($this->db->isExist($this->db_query_checkUser)){
-           $sql = "UPDATE usersdata SET userSessionState = '".$this->state."' WHERE userID ='".$this->user_id."';";
-        }else{
-           $sql = "INSERT INTO usersdata (userID, userSessionState, userAccessToken) VALUES ('$this->user_id', '$this->state', '".$_SESSION['access_token']."')";
+    static public function getUserImage(){
+        return 'https://cdn.discordapp.com/avatars/'.self::$user_id.'/'.self::$user_avatar;
+    }
+
+    static public function storeUserData(){
+        $sql = "";
+        if(self::$db->isExist(self::$db_query_checkUser)){
+           $sql = "UPDATE usersdata SET userSessionState = '".self::$state."' WHERE userID ='".self::$user_id."';";
+        }else if(!empty(self::$user_id)){
+           $sql = "INSERT INTO usersdata (userID, userSessionState, userAccessToken) VALUES ('".self::$user_id."', '".self::$state."', '".$_SESSION['access_token']."')";
         }
-        $this->db->exec($sql);
+
+        self::$db->exec($sql);
     }
 }
 ?>
