@@ -2,11 +2,15 @@
 include('classes/User.class.php');
 
 if(!isset($_POST['login'])) {
-    header('location: index.php');
+    if(isset($_SESSION['loggedIn']) == true){
+        header('location: dashboard.php');
+    }else{
+        header('location: index.php');
+    }
     exit();
+}else{
+    User::load();
+    header('location: '.User::getOAuth2URL());
 }
-$user = new User();
-header('location: '.$user->getOAuth2URL());
-if(isset($_POST['login']) && empty($_SESSION['state'])) header('location: '.$user->getOAuth2URL());
 ?>
 
