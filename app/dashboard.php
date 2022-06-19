@@ -4,7 +4,7 @@
 include('reuseable/header.php');
 include('reuseable/navbar.php');
 
-//echo '<pre>' . print_r($_SESSION, TRUE) . '</pre>';
+echo '<pre>' . print_r($_SESSION, TRUE) . '</pre>';
 
 //!super messy code, but it works :D
 //!need to re factor when all of the components works!
@@ -54,11 +54,11 @@ include('reuseable/navbar.php');
                     <form method="POST" action="processSubmission.php">
                         <div class="mb-3">
                             <label class="form-label" for="artworkTittle">Artwork Title</label>
-                            <input class="form-control" id="artworkTittle" type="text" required />
+                            <input class="form-control" id="artworkTittle" name="artworkTittle" type="text" required />
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="uploadArtwork">Upload Artwork</label>
-                            <input class="form-control" id="uploadArtwork" type="file" accept="image/png, image/gif, image/jpeg" required></input>
+                            <input class="form-control" id="uploadArtwork" name ="artworkSource" type="file" accept="image/png, image/gif, image/jpeg" required></input>
                         </div>
                         <div class="mb-3">
                             <p class="text-muted">
